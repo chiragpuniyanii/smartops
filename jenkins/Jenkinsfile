@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE    = "chiragg619/nodejs-app"
         DOCKER_TAG      = "build-${BUILD_NUMBER}"
-        APP_SERVER_IP   = "54.235.46.22"
+        APP_SERVER_IP   = "54.152.158.73"
         GEMINI_API_KEY  = credentials('gemini-api-key')
         SLACK_WEBHOOK_URL = credentials('slack-webhook')
     }
@@ -97,7 +97,7 @@ pipeline {
             steps {
                 echo '💓 Running health check...'
                 sh "sleep 15"
-                sh "curl -f http://${APP_SERVER_IP}:3000/health || exit 1"
+                sh "curl -f http://${APP_SERVER_IP}:30000/ || exit 1"
             }
         }
 
