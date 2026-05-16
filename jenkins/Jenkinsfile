@@ -6,6 +6,7 @@ pipeline {
         DOCKER_TAG      = "build-${BUILD_NUMBER}"
         APP_SERVER_IP   = "54.235.46.22"
         GEMINI_API_KEY  = credentials('gemini-api-key')
+        SLACK_WEBHOOK_URL = credentials('slack-webhook')
     }
 
     stages {
