@@ -1,44 +1,39 @@
-import google.generativeai as genai
-import os, json, sys
-from urllib.request import urlopen, Request
-from urllib.parse import urlencode
+from google import genai
+import os, sys, json
 import urllib.request
 
-api_key = os.environ.get("GEMINI_API_KEY")
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 slack_webhook = os.environ.get("SLACK_WEBHOOK_URL")
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel("gemini-1.5-flash")
 
-# Alert data stdin se ya argument se lo
-alert_data = sys.argv[1] if len(sys.argv) > 1 else '{"alert": "High CPU usage on prod-server-01", "value": "92%"}'
+alert_data = sys.argv[1] if len(sys.argv) > 1 else '{"alert":"High CPU","value":"92%"}'
 
 prompt = f"""
-You are a DevOps incident responder AI.
-Analyze this Prometheus alert and respond in this format:
+You are a DevOps incident responder.
+Analyze this alert:
 
-ALERT SUMMARY: (1 line what happened)
-ROOT CAUSE: (most likely cause)
-IMMEDIATE FIX: (step by step commands to fix)
-PREVENTION: (how to prevent this in future)
+ALERT SUMMARY: (1 line)
+ROOT CAUSE: (most likely reason)
+IMMEDIATE FIX: (commands to run)
+PREVENTION: (future steps)
 
-Alert data: {alert_data}
+Alert: {alert_data}
 """
 
-response = model.generate_content(prompt)
-summary = response.text
+response = client.models.generate_content(
+    model="gemini-2.0-flash",
+    contents=prompt
+)
 
-print("🤖 AI Alert Analysis:")
+summary = response.text
+print("AI Alert Analysis:")
 print(summary)
 
-# Slack pe bhejo
 if slack_webhook:
-    message = {
-        "text": f"🔴 *SmartOps Alert — AI Analysis*\n```{summary}```"
-    }
+    message = {"text": f"🔴 *SmartOps AI Alert*\n```{summary}```"}
     data = json.dumps(message).encode("utf-8")
-    req = Request(slack_webhook, data=data,
-                  headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(
+        slack_webhook, data=data,
+        headers={"Content-Type": "application/json"}
+    )
     urllib.request.urlopen(req)
-    print("✅ Alert summary sent to Slack!")
-else:
-    print("⚠ SLACK_WEBHOOK_URL not set — skipping Slack notification")
+    print("✅ Sent to Slack!")
